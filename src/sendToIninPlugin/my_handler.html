@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 	<style type="text/css">
@@ -21,10 +22,9 @@
 			padding: 3px;
 		}
 
-		#inin-twittericon {
+		#inin-headericon {
 			width: 16px;
 			height: 16px;
-			background-color: #FFFFFF;
 			float: left;
 			margin: 0 4px 0 2px;
 			border-radius: 3px;
@@ -91,24 +91,83 @@
 		}
 
 		//document.write('request: ' + decodeURIComponent(getQuerystring('request')) + '<br />');
-		console.debug(decodeURIComponent(getQuerystring('request')));
+		//console.debug(decodeURIComponent(getQuerystring('request')));
 
 
 		$(document).ready(function(){
-			$('#templateContent').load('https://hootsuite.mydevspace.com/generictemplate.html', function(){
-				console.debug('load complete');
-				var request = JSON.parse(decodeURIComponent(getQuerystring('request')));
-				$('#inin-postimage').attr('src','http://hootsuite.mydevspace.com/img/test/imagepost.jpg');
-				$('#inin-profileimage').attr('src','http://hootsuite.mydevspace.com/img/test/profilepic.jpg');
-				$('#inin-displayname').text(request.post.user.userid);
-				$('#inin-handle').text('@' + request.post.user.username);
-				$('#inin-postbody').html(request.post.content.bodyhtml);
-				$('#inin-footerleft').html(request.post.datetime);
-				$('#inin-footerright').html(request.post.source);
-			});
+			var request = JSON.parse('{"version":"1","post":{"href":"http://www.facebook.com/permalink.php?story_fbid=1383992815250113&id=100009182231710","id":"100009182231710_1383992815250113","datetime":"2015-02-26T12:05:17","source":"","network":"mixi","content":{"body":"Follow me at https://twitter.com/NotTimOfficial","bodyhtml":"Follow me at <a href=\\"https://twitter.com/NotTimOfficial\\" target=\\"_blank\\" rel=\\"nofollow\\">https://twitter.com/NotTimOfficial</a>"},"user":{"userid":"100009182231710","username":"Tim Nottheenchanter"},"conversation":[],"attachments":[{}]}}');
+
+			// Set network styles
+			switch(request.post.network) {
+				case 'twitter':
+					$('#inin-header').css('background-color', '#0084B4');
+					$('#inin-headericon').attr('src','img/icon_twitter.png');
+					$('#inin-networkname').text('Twitter');
+					break;
+				case 'facebook':
+					$('#inin-header').css('background-color', '#3B5998');
+					$('#inin-header').css('background-image', "url('img/header_background_facebook.png')");
+					$('#inin-headericon').attr('src','img/icon_facebook2.png');
+					$('#inin-networkname').text('Facebook');
+					break;
+				case 'googleplus':
+					$('#inin-header').css('background-color', '#D73D32');
+					$('#inin-headericon').attr('src','img/icon_googleplus.png');
+					$('#inin-networkname').text('Google+');
+					break;
+				case 'linkedin':
+					$('#inin-header').css('background-color', '#686868');
+					$('#inin-header').css('background-image', "url('img/header_background_linkedin.png')");
+					$('#inin-headericon').attr('src','img/icon_linkedin.png');
+					$('#inin-networkname').text('LinkedIn');
+					break;
+				case 'foursquare':
+					$('#inin-header').css('background-color', '#0732A2');
+					$('#inin-headericon').attr('src','img/icon_foursquare.png');
+					$('#inin-networkname').text('Foursquare');
+					break;
+				case 'wordpress':
+					$('#inin-header').css('background-color', '#0085BE');
+					$('#inin-headericon').attr('src','img/icon_wordpress.png');
+					$('#inin-networkname').text('Wordpress');
+					break;
+				case 'mixi':
+					$('#inin-header').css('background-color', '#E1C04F');
+					$('#inin-headericon').attr('src','img/icon_mixi.png');
+					$('#inin-networkname').text('Mixi');
+					break;
+			}
+
+			// Populate with content
+			$('#inin-postimage').attr('src','img/test/imagepost.jpg');
+			$('#inin-profileimage').attr('src','profilepic.jpg');
+			$('#inin-displayname').text(request.post.user.userid);
+			$('#inin-handle').text('@' + request.post.user.username);
+			$('#inin-postbody').html(request.post.content.bodyhtml);
+			$('#inin-footerleft').html(request.post.datetime);
+			$('#inin-footerright').html(request.post.source);
 		});
 	</script>
 
-	<div id="templateContent"></div>
+<div id="inin-maindiv">
+	<div id="inin-header">
+		<img id="inin-headericon" src="img/icon_twitter.png" />
+		<span id="inin-networkname"></span>
+	</div>
+	<img id="inin-postimage" />
+	<br />
+	<div id="inin-postdetails">
+		<img id="inin-profileimage" />
+		<span id="inin-displayname"></span><br />
+		<span id="inin-handle"></span><br />
+		<div id="inin-postbody"></div>
+		<div id="inin-footer">
+			<div id="inin-footerleft"></div>
+			<div id="inin-footerright"></div>
+			<div id="inin-clear"></div>
+		</div>
+	</div>
+</div>
+
 </body>
 </html>
