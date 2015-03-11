@@ -1,0 +1,114 @@
+<html>
+<head>
+	<style type="text/css">
+		body {
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 11pt;
+		}
+
+		#inin-maindiv {
+			width: 500px;
+  			border: #ddd 1px solid;
+			border-radius: 5px;
+			box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+		}
+
+		#inin-header {
+			background-color: #0084B4;
+			color: #FFFFFF;
+			border-radius: 5px 5px 0 0;
+			font-size: 11pt;
+			padding: 3px;
+		}
+
+		#inin-twittericon {
+			width: 16px;
+			height: 16px;
+			background-color: #FFFFFF;
+			float: left;
+			margin: 0 4px 0 2px;
+			border-radius: 3px;
+		}
+
+		#inin-postdetails {
+			padding: 6px;
+		}
+
+		#inin-postimage {
+			margin: 0px auto;
+			width: 500px;
+		}
+
+		#inin-profileimage {
+			width: 32px;
+			height: 32px;
+			float: left;
+			margin: 0 4px 0 0;
+		}
+
+		#inin-displayname {
+			font-weight: bold;
+		}
+
+		#inin-handle {
+			color: #707070;
+		}
+
+		#inin-postbody {
+			margin: 8px 0;
+		}
+
+		#inin-clear {
+			clear: both;
+		}
+
+		#inin-footer {
+			border-style: solid;
+			border-width: 1px 0 0 0;
+			border-color: #E8E8E8;
+			padding: 6px 0 0 0;
+		}
+
+		#inin-footerleft {
+			float: left;
+			color: #707070;
+		}
+
+		#inin-footerright {
+			float: right;
+			color: #707070;
+		}
+	</style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+</head>
+<body>
+	<script>
+		function getQuerystring (key) {
+			key = key.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+			var regex = new RegExp("[\\?&]"+key+"=([^]*)");
+			var qs = regex.exec(location.search);
+			return qs[1];
+		}
+
+		//document.write('request: ' + decodeURIComponent(getQuerystring('request')) + '<br />');
+		console.debug(decodeURIComponent(getQuerystring('request')));
+
+
+		$(document).ready(function(){
+			$('#templateContent').load('https://hootsuite.mydevspace.com/generictemplate.html', function(){
+				console.debug('load complete');
+				var request = JSON.parse(decodeURIComponent(getQuerystring('request')));
+				$('#inin-postimage').attr('src','http://hootsuite.mydevspace.com/img/test/imagepost.jpg');
+				$('#inin-profileimage').attr('src','http://hootsuite.mydevspace.com/img/test/profilepic.jpg');
+				$('#inin-displayname').text(request.post.user.userid);
+				$('#inin-handle').text('@' + request.post.user.username);
+				$('#inin-postbody').html(request.post.content.bodyhtml);
+				$('#inin-footerleft').html(request.post.datetime);
+				$('#inin-footerright').html(request.post.source);
+			});
+		});
+	</script>
+
+	<div id="templateContent"></div>
+</body>
+</html>

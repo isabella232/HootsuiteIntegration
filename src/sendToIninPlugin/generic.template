@@ -1,0 +1,19 @@
+<div id="inin-maindiv">
+	<div id="inin-header">
+		<img id="inin-twittericon" src="img/icon_twitter.png" />
+		Twitters
+	</div>
+	<img id="inin-postimage" />
+	<br />
+	<div id="inin-postdetails">
+		<img id="inin-profileimage" />
+		<span id="inin-displayname"></span><br />
+		<span id="inin-handle"></span><br />
+		<div id="inin-postbody"></div>
+		<div id="inin-footer">
+			<div id="inin-footerleft"></div>
+			<div id="inin-footerright"></div>
+			<div id="inin-clear"></div>
+		</div>
+	</div>
+</div>
