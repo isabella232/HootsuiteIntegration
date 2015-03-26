@@ -7,14 +7,46 @@
 			font-size: 11pt;
 		}
 
+		td {
+			padding: 5px 10px;
+		}
+
+		input, select, textarea {
+			box-sizing: border-box;
+		}
+
+		#inin-formbodytable {
+			border: 0px;
+			width: 100%;
+		}
+
+		.inin-input {
+			width: 100%;
+			margin: 0;
+		}
+
+		.inin-tablelabel {
+			width: 80px;
+		}
+
 		#inin-maindiv {
+		}
+
+		#inin-postdiv {
   			border: #ddd 1px solid;
 			border-radius: 5px;
 			box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 		}
 
+		#inin-submitbutton {
+			width: 100%;
+			margin: 0;
+			border: 1px solid #000000;
+			background-color: #CCCCCC;
+		}
+
 		#inin-header {
-			background-color: #0084B4;
+			background-color: #AAAAAA;
 			color: #FFFFFF;
 			border-radius: 5px 5px 0 0;
 			font-size: 11pt;
@@ -77,26 +109,58 @@
 			float: right;
 			color: #707070;
 		}
+
+		.inin-success {
+			margin-top: 50px;
+			font-size: 22pt;
+			color: #1B9133;
+			text-align: center;
+		}
+
+		.inin-success2 {
+			margin-top: 30px;
+			font-size: 16pt;
+			text-align: center;
+		}
 	</style>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="https://d2l6uygi1pgnys.cloudfront.net/jsapi/2-0/hsp.js"></script>
+	<script src="scripts/jquery-2.1.3.js"></script>
+	<script src="scripts/jquery.cookie-1.4.1.min.js"></script>
+	<script src="scripts/common.js"></script>
 </head>
 <body>
 	<script>
-		function getQuerystring (key) {
-			key = key.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-			var regex = new RegExp("[\\?&]"+key+"=([^]*)");
-			var qs = regex.exec(location.search);
-			if (qs.length >= 2)
-				return qs[1];
-			else
-				return '';
+		var inin_workgroupList = {
+			"Sales":"Sales Workgroup",
+			"Support":"Support Workgroup",
+			"Marketing":"Marketing Workgroup"
+		};
+		var inin_reasonList = {
+			"R1":"Reason One",
+			"R2":"Reason Two",
+			"R3":"Reason Three"
+		};
+		var inin_rawData;
+
+		function noSession() {
+			$('#inin-maindiv').html('Error: No session!');
 		}
 
-
 		$(document).ready(function() {
+		    // Load cached session data
+		    loadSessionCookie(noSession);
+
+		    // Load data from cookie
+			var cookieId = getParameterByName('id');
+			var cookieData = $.cookie(cookieId);
+			if (cookieId == '' || cookieData == undefined) return;
+
+			// Remove cookie
+			$.removeCookie(cookieId);
+
 			// Get request data from querystring
-			var request = JSON.parse(decodeURIComponent(getQuerystring('request')));
-			//console.debug(request);
+			var request = JSON.parse(cookieData);
+			inin_rawData = JSON.stringify(request);
 
 			//var request = JSON.parse('{"version":"1","post":{"href":"http://www.facebook.com/permalink.php?story_fbid=1383992815250113&id=100009182231710","id":"100009182231710_1383992815250113","datetime":"2015-02-26T12:05:17","source":"","network":"mixi","content":{"body":"Follow me at https://twitter.com/NotTimOfficial","bodyhtml":"Follow me at <a href=\\"https://twitter.com/NotTimOfficial\\" target=\\"_blank\\" rel=\\"nofollow\\">https://twitter.com/NotTimOfficial</a>"},"user":{"userid":"100009182231710","username":"Tim Nottheenchanter"},"conversation":[],"attachments":[{}]}}');
 
@@ -167,29 +231,85 @@
 			}
 
 			// Populate with content
-			//$('#inin-postimage').attr('src','img/test/imagepost.jpg');
-			//$('#inin-profileimage').attr('src','profilepic.jpg');
-			//$('#inin-handle').text('@' + request.post.user.username);
 			$('#inin-postbody').html(request.post.content.bodyhtml);
 			$('#inin-footerleft').html(dateString);
 			$('#inin-footerright').html(source + ' <a href="' + request.post.href + '" target="_blank"><img src="img/earth.png" width="16" height="16" /></a>' );
+
+			// Populate workgroup list
+			$.each(inin_workgroupList, function(key, value) {   
+			     $('#inin-workgroup')
+			         .append($("<option></option>")
+			         .attr("value",key)
+			         .text(value)); 
+			});
+
+			// Populate reason list
+			$.each(inin_reasonList, function(key, value) {   
+			     $('#inin-reason')
+			         .append($("<option></option>")
+			         .attr("value",key)
+			         .text(value)); 
+			});
 		});
 	</script>
 
 <div id="inin-maindiv">
-	<div id="inin-header">
-		<img id="inin-headericon" src="img/icon_twitter.png" />
-		<span id="inin-networkname"></span>
-	</div>
-	<div id="inin-postdetails">
-		<span id="inin-displayname"></span><br />
-		<div id="inin-postbody"></div>
-		<div id="inin-footer">
-			<div id="inin-footerleft"></div>
-			<div id="inin-footerright"></div>
-			<div id="inin-clear"></div>
-		</div>
-	</div>
+	<table id="inin-formbodytable">
+		<tr>
+			<td class="inin-tablelabel">Subject:</td>
+			<td><input type="text" id="inin-subject" class="inin-input" /></td>
+		</tr>
+		<tr>
+			<td class="inin-tablelabel">Priority:</td>
+			<td>
+				<select id="inin-priority" class="inin-input">
+					<option>Low</option>
+					<option>Medium</option>
+					<option>High</option>
+					<option>Urgent</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="inin-tablelabel">Reason:</td>
+			<td><select id="inin-reason" class="inin-input"></select></td>
+		</tr>
+		<tr>
+			<td class="inin-tablelabel">Workgroup:</td>
+			<td><select id="inin-workgroup" class="inin-input"></select></td>
+		</tr>
+		<tr>
+			<td class="inin-tablelabel">Notes:</td>
+			<td><textarea id="inin-notes" class="inin-input" rows="3"></textarea></td>
+		</tr>
+		<tr>
+			<td colspan="2" class="inin-tablelabel">Original Post:</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<div id="inin-postdiv">
+					<div id="inin-header">
+						<img id="inin-headericon" src="img/inin_logo_16.png" />
+						<span id="inin-networkname">Unknown</span>
+					</div>
+					<div id="inin-postdetails">
+						<span id="inin-displayname"></span><br />
+						<div id="inin-postbody"><i>Post data missing</i></div>
+						<div id="inin-footer">
+							<div id="inin-footerleft"></div>
+							<div id="inin-footerright"></div>
+							<div id="inin-clear"></div>
+						</div>
+					</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<button id="inin-submitbutton" onclick="createInteraction()">Create Interaction</button>
+			</td>
+		</tr>
+	</table>
 </div>
 
 </body>
