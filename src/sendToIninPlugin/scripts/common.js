@@ -14,6 +14,19 @@ var inin_loginRedirect;
 var inin_noSessionCallback;
 var inin_pollingEnabled = false;
 
+if (typeof String.prototype.startsWith != 'function') {
+    String.prototype.startsWith = function (str){
+        return this.slice(0, str.length) == str;
+    };
+}
+
+if (typeof String.prototype.endsWith != 'function') {
+  String.prototype.endsWith = function (str){
+    return this.slice(-str.length) == str;
+  };
+}
+
+
 function loadCredsCookie() {
     var credsCookie = $.cookie(inin_credsCookie);
     if (credsCookie != undefined){
@@ -90,6 +103,7 @@ function checkConnectionError(jqXHR, textStatus, errorThrown) {
 }
 
 function setError(message) {
+    console.error(message);
     if (message == undefined || message == '') {
         $('#inin-error').css('display', 'none');
         $('#inin-error').html('No error');
@@ -182,10 +196,20 @@ function login() {
 
     // Set local vars 
     inin_server = $('#inin-server').val();
-    if ($('#inin-port').val().trim() == '')
-        inin_server += ':8018';
-    else
+    if (inin_server.endsWith('/')) {
+        // Remove trailing slash
+        inin_server = inin_server.substring(0, inin_server.length - 1);
+    }
+    if ($('#inin-port').val().trim() == '') {
+        // Add default ports if none specified
+        if (inin_server.startsWith('https'))
+            inin_server += ':8019';
+        else
+            inin_server += ':8018';
+    } else {
+        // Add specified port
         inin_server += ':' + $('#inin-port').val().trim();
+    }
     inin_username = $('#inin-username').val().trim();
     inin_password = $('#inin-password').val();
 
@@ -300,6 +324,17 @@ function messagePollProcessor(data, textStatus, jqXHR){
 }
 
 function createInteraction() {
+    // Validate
+    if ($('#inin-subject').val().trim() == '') {
+        setError('Subject cannot be empty!');
+        return;
+    }
+    if ($('textarea#inin-notes').val().trim() == '') {
+        setError('Notes cannot be empty!');
+        return;
+    }
+    setError();
+
     /****** KNOWN ISSUE ******
      * ICWS has a bug that prevents the attributes in additionalAttributes from being set 
      * on the interaction. Because of this, it is necessary to create the interaction and 
@@ -339,8 +374,12 @@ function createInteractionSuccess(data, textStatus, jqXHR) {
         "attributes":{
             "Hootsuite_RawData":inin_rawData,
             "Hootsuite_Subject":$('#inin-subject').val(),
-            "Hootsuite_priority":$('#inin-priority').val(),
-            "Hootsuite_Reason":$('#inin-reason').val(),
+            "Hootsuite_PriorityKey":$('#inin-priority').val(),
+            "Hootsuite_Priority":$('#inin-priority option:selected').text(),
+            "Hootsuite_ReasonKey":$('#inin-reason').val(),
+            "Hootsuite_Reason":$('#inin-reason option:selected').text(),
+            "Hootsuite_WorkgroupKey":$('#inin-workgroup').val(),
+            "Hootsuite_Workgroup":$('#inin-workgroup option:selected').text(),
             "Hootsuite_Notes":$('textarea#inin-notes').val()
         }
     };

@@ -86,7 +86,6 @@
 		<script src="scripts/jquery.cookie-1.4.1.min.js"></script>
 		<script src="scripts/common.js"></script>
     	<script>
-    		var pid;
 			$(document).ready(function() {
 				var hsp_params = {
 					apiKey: "65ipi5hnjbgo8sso4gckwsw8c3ickmg3f13"
@@ -100,14 +99,10 @@
 
 				setInterval(checkSession, 120000);
 				checkSession();
-
-				console.debug('this='+window.location.href);
-				pid = getParameterByName('pid');
 			});
 
 			function checkSession() {
 				// Load cached session data. This will initiate a message poll if a session exists
-				console.debug('cookie time!');
 		    	loadSessionCookie(null, true);
 			}
 
@@ -129,7 +124,7 @@
 				// Show page
 				var contentUrl = 'https://hootsuite.mydevspace.com/login.html' + 
 					'?id=' + encodeURIComponent(message.post.id) + 
-					'&pid=' + encodeURIComponent(pid); 
+					'&pid=' + encodeURIComponent(getParameterByName('pid')); 
 				hsp.showCustomPopup(contentUrl, 'Create Interaction');
 			}
 		</script>
