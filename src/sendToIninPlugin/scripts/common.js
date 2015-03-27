@@ -14,12 +14,18 @@ var inin_loginRedirect;
 var inin_noSessionCallback;
 var inin_pollingEnabled = false;
 
+/****** IMMEDIATE SCRIPTS ******
+ * These scripts are run as soon as this script file is loaded.
+ */
+
+// Ensure String.startsWith is a function
 if (typeof String.prototype.startsWith != 'function') {
     String.prototype.startsWith = function (str){
         return this.slice(0, str.length) == str;
     };
 }
 
+// Ensure String.endsWith is a function
 if (typeof String.prototype.endsWith != 'function') {
   String.prototype.endsWith = function (str){
     return this.slice(-str.length) == str;
@@ -27,93 +33,37 @@ if (typeof String.prototype.endsWith != 'function') {
 }
 
 
-function loadCredsCookie() {
-    var credsCookie = $.cookie(inin_credsCookie);
-    if (credsCookie != undefined){
-        // Convert to JSON object
-        var credsCookieData = eval('('+credsCookie+')');
-        console.debug('Got credentials cookie');
 
-        // Set fields
-        $('#inin-server').val(credsCookieData.server);
-        $('#inin-port').val(credsCookieData.port);
-        $('#inin-username').val(credsCookieData.username);
-    } else {
-        console.debug('no creds cookie');
-    }
-}
+/****** GENERAL ******
+ * These scripts provide general or multi-purpose functionality
+ */
 
-function loadSessionCookie(noSessionCallback, startPolling) {
-    // Store info
-    inin_noSessionCallback = noSessionCallback;
-    inin_pollingEnabled = startPolling;
-
-    // Check cookie
-    var sessionCookie = $.cookie(inin_sessionCookie);
-    if (sessionCookie != undefined) {
-        // Convert to JSON object
-        var sessionCookieData = eval('('+sessionCookie+')');
-        console.debug('Got session cookie');
-
-        inin_sessionId = sessionCookieData.sessionId;
-        inin_csrfToken = sessionCookieData.csrfToken;
-        inin_server = sessionCookieData.server;
-
-        sendRequest('GET', inin_sessionId + '/connection', null, checkConnectionSuccess, checkConnectionError);
-    } else {
-        console.debug('no session cookie');
-
-        // Notify
-        if (inin_noSessionCallback) inin_noSessionCallback();
-    }
-}
-
-function checkConnectionSuccess(data, textStatus, jqXHR) {
-    var jsonData = JSON.parse(data);
-
-    if (jsonData.connectionState == 1) {
-        console.debug('Connection is up');
-        initialize();
-    } else {
-        console.debug('Connection is unavailable');
-        // Cleanup
-        $.removeCookie(inin_sessionCookie);
-        inin_sessionId = null;
-        inin_csrfToken = null;
-        inin_server = null;
-
-        // Notify
-        if (inin_noSessionCallback) inin_noSessionCallback();
-    }
-
-}
-
-function checkConnectionError(jqXHR, textStatus, errorThrown) {
-    var jsonResponse = JSON.parse(jqXHR.responseText);
-    console.error(data);
-
-    // Cleanup
-    $.removeCookie(inin_sessionCookie);
-    inin_sessionId = null;
-    inin_csrfToken = null;
-    inin_server = null;
-
-    // Notify
-    if (inin_noSessionCallback) inin_noSessionCallback();
-}
-
+// Sets an error message in the UI
 function setError(message) {
-    console.error(message);
     if (message == undefined || message == '') {
         $('#inin-error').css('display', 'none');
         $('#inin-error').html('No error');
     } else {
+        console.error(message);
         $('#inin-error').css('display', 'block');
         $('#inin-error').html(message);
     }
 }
 
-//sendRequest is a wrapper around the XMLHttpRequest to make ajax calls a little easier.        
+// Determines if the passed in value is a valid numeric value
+function isNumeric(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+// Gets a querystring parameter value by name
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+// Sends a request to an ICWS resource
 function sendRequest(verb, resource, requestData, successCallback, errorCallback) {
     // Refresh session cookie
     var sessionCookie = $.cookie(inin_sessionCookie);
@@ -158,6 +108,7 @@ function sendRequest(verb, resource, requestData, successCallback, errorCallback
     $.ajax(request);
 }
 
+// Ensures that ICWS responses have a JSON body for jQuery to parse
 function dataFilter(data, type) {
     /****** KNOWN ISSUE ******
      * The purpose of this is to provide content for a response that has none. ICWS 
@@ -172,6 +123,91 @@ function dataFilter(data, type) {
         return data;
 }
 
+
+
+/****** SESSION MANAGEMENT ******
+ * These functions manipulate
+ */
+
+// Loads the credentials cookie and populates fields
+function loadCredsCookie() {
+    var credsCookie = $.cookie(inin_credsCookie);
+    if (credsCookie != undefined){
+        // Convert to JSON object
+        var credsCookieData = eval('('+credsCookie+')');
+        console.debug('Got credentials cookie');
+
+        // Set fields
+        $('#inin-server').val(credsCookieData.server);
+        $('#inin-port').val(credsCookieData.port);
+        $('#inin-username').val(credsCookieData.username);
+    } else {
+        console.debug('no creds cookie');
+    }
+}
+
+// Loads the session cookie and initializes the session variables
+function loadSessionCookie(noSessionCallback, startPolling) {
+    // Store info
+    inin_noSessionCallback = noSessionCallback;
+    inin_pollingEnabled = startPolling;
+
+    // Check cookie
+    var sessionCookie = $.cookie(inin_sessionCookie);
+    if (sessionCookie != undefined) {
+        // Convert to JSON object
+        var sessionCookieData = eval('('+sessionCookie+')');
+        console.debug('Got session cookie');
+
+        inin_sessionId = sessionCookieData.sessionId;
+        inin_csrfToken = sessionCookieData.csrfToken;
+        inin_server = sessionCookieData.server;
+
+        sendRequest('GET', inin_sessionId + '/connection', null, onCheckConnectionSuccess, onCheckConnectionError);
+    } else {
+        console.debug('no session cookie');
+
+        // Notify
+        if (inin_noSessionCallback) inin_noSessionCallback();
+    }
+}
+
+// Success handler for GET /{sessionId}/connection
+function onCheckConnectionSuccess(data, textStatus, jqXHR) {
+    var jsonData = JSON.parse(data);
+
+    if (jsonData.connectionState == 1) {
+        console.debug('Connection is up');
+        initialize();
+    } else {
+        console.debug('Connection is unavailable');
+        // Cleanup
+        $.removeCookie(inin_sessionCookie);
+        inin_sessionId = null;
+        inin_csrfToken = null;
+        inin_server = null;
+
+        // Notify
+        if (inin_noSessionCallback) inin_noSessionCallback();
+    }
+}
+
+// Error handler for GET /{sessionId}/connection
+function onCheckConnectionError(jqXHR, textStatus, errorThrown) {
+    var jsonResponse = JSON.parse(jqXHR.responseText);
+    console.error(data);
+
+    // Cleanup
+    $.removeCookie(inin_sessionCookie);
+    inin_sessionId = null;
+    inin_csrfToken = null;
+    inin_server = null;
+
+    // Notify
+    if (inin_noSessionCallback) inin_noSessionCallback();
+}
+
+// Creates a connection to ICWS
 function login() {
     // Validate
     if ($('#inin-server').val().trim() == '') {
@@ -231,21 +267,11 @@ function login() {
     };
     
     // Log in
-    sendRequest("POST","connection", loginData, afterLogin, loginErrorHandler);                
+    sendRequest("POST","connection", loginData, onLoginSuccess, onLoginError);                
 }
 
-function isNumeric(n) {
-    return !isNaN(parseFloat(n)) && isFinite(n);
-}
-
-function getParameterByName(name) {
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(location.search);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-}
-
-function afterLogin(data, textStatus, jqXHR) {
+// Success handler for POST /connection
+function onLoginSuccess(data, textStatus, jqXHR) {
     var jsonData = JSON.parse(data);
 
     // Set session cookie
@@ -264,7 +290,8 @@ function afterLogin(data, textStatus, jqXHR) {
     initialize();
 }
 
-function loginErrorHandler(jqXHR, textStatus, errorThrown) {
+// Error handler for POST /connection
+function onLoginError(jqXHR, textStatus, errorThrown) {
     var jsonResponse = JSON.parse(jqXHR.responseText);
     console.error(data);
 
@@ -272,6 +299,7 @@ function loginErrorHandler(jqXHR, textStatus, errorThrown) {
     logout();
 }
 
+// Initializes after verifying a valid session exists
 function initialize() {
     // Redirect
     if (inin_loginRedirect) {
@@ -284,30 +312,12 @@ function initialize() {
     // This is being used as a keepalive as there are no subscriptions
     if (inin_messagePollTimer || inin_pollingEnabled == false) return;
     inin_messagePollTimer = setInterval(function() {
-        sendRequest("GET", inin_sessionId + "/messaging/messages", null, messagePollProcessor);
+        sendRequest("GET", inin_sessionId + "/messaging/messages", null, onCheckMessagesSuccess);
     }, inin_messagePollInterval);
 }
 
-function logout() {
-    sendRequest("DELETE", inin_sessionId + "/connection", null, afterLogout);     
-}
-
-function afterLogout(data, textStatus, jqXHR) {
-    var jsonData = JSON.parse(data);
-
-    clearInterval(inin_messagePollTimer);
-    $.removeCookie(inin_sessionCookie);
-}
-
-function logoutErrorHandler(jqXHR, textStatus, errorThrown) {
-    var jsonResponse = JSON.parse(jqXHR.responseText);
-    console.error(data);
-
-    setError(data.message);
-}
-
-//This method queries the server for new messages
-function messagePollProcessor(data, textStatus, jqXHR){
+// Success handler for POST /{sessionId}/messaging/messages
+function onCheckMessagesSuccess(data, textStatus, jqXHR){
     var jsonData = JSON.parse(data);
 
     if(!jsonData || jsonData.length == 0){
@@ -323,6 +333,34 @@ function messagePollProcessor(data, textStatus, jqXHR){
     console.groupEnd();
 }
 
+// Disconnects the session
+function logout() {
+    sendRequest("DELETE", inin_sessionId + "/connection", null, onLogoutSuccess, onLogoutError);     
+}
+
+// Success handler for DELETE /{sessionId}/connection
+function onLogoutSuccess(data, textStatus, jqXHR) {
+    var jsonData = JSON.parse(data);
+
+    clearInterval(inin_messagePollTimer);
+    $.removeCookie(inin_sessionCookie);
+}
+
+// Error handler for DELETE /{sessionId}/connection
+function onLogoutError(jqXHR, textStatus, errorThrown) {
+    var jsonResponse = JSON.parse(jqXHR.responseText);
+    console.error(data);
+
+    setError(data.message);
+}
+
+
+
+/****** INTERACTIONS ******
+ * Functions for interactions
+ */
+
+// Creates a new generic interaction
 function createInteraction() {
     // Validate
     if ($('#inin-subject').val().trim() == '') {
@@ -362,10 +400,11 @@ function createInteraction() {
 
     // Create the interaction
     sendRequest('POST', inin_sessionId + '/interactions', createInteractionData, 
-        createInteractionSuccess, createInteractionError);
+        onCreateInteractionSuccess, onCreateInteractionError);
 }
 
-function createInteractionSuccess(data, textStatus, jqXHR) {
+// Success handler for POST /{sessionId}/interactions
+function onCreateInteractionSuccess(data, textStatus, jqXHR) {
     var jsonData = JSON.parse(data);
 
     console.debug('Created interaction: ' + jsonData.interactionId);
@@ -386,37 +425,45 @@ function createInteractionSuccess(data, textStatus, jqXHR) {
 
     // Set the attributes
     sendRequest('POST', inin_sessionId + '/interactions/' + jsonData.interactionId, setAttributeData, 
-        setAttributeSuccess, setAttributeError);
+        onSetAttributeSuccess, onSetAttributeError);
 }
 
-function createInteractionError(jqXHR, textStatus, errorThrown) {
+// Error handler for POST /{sessionId}/interactions
+function onCreateInteractionError(jqXHR, textStatus, errorThrown) {
     var jsonResponse = JSON.parse(jqXHR.responseText);
     console.error(data);
 
     alert('Error creating interaction: ' + jsonResponse.message);
 }
 
-function setAttributeSuccess(data, textStatus, jqXHR) {
+// Success handler for POST /{sessionId}/interactions/{interactionId}
+function onSetAttributeSuccess(data, textStatus, jqXHR) {
     console.debug('attributes set');
 
-    $('#inin-maindiv').fadeOut("500",mainFadeOutComplete);
+    // Hide the create interaction content
+    $('#inin-maindiv').fadeOut("500", onMainFadeOutComplete);
 }
 
-function setAttributeError(jqXHR, textStatus, errorThrown) {
+// Error handler for POST /{sessionId}/interactions/{interactionId}
+function onSetAttributeError(jqXHR, textStatus, errorThrown) {
     var jsonResponse = JSON.parse(jqXHR.responseText);
     console.error(data);
 
     alert('Error setting attributes: ' + jsonResponse.message);
 }
 
-function mainFadeOutComplete() {
+// Handler after main div has completed hiding (after interaction is created)
+function onMainFadeOutComplete() {
+    // Set success message and show
     $('#inin-maindiv').html('<div class="inin-success">Interaction Created!</div><div class="inin-success2"><a href="#" onclick="closeCustomPopup()">Click to close</a></div>');
     $('#inin-maindiv').fadeIn();
 
     inin_closeCustomPopupTimer = setTimeout(closeCustomPopup, 3000);
 }
 
+// Closes the popup window
 function closeCustomPopup() {
+    // Clear the close timer if it's set
     if (inin_closeCustomPopupTimer) {
         clearTimeout(inin_closeCustomPopupTimer);
         inin_closeCustomPopupTimer = null;

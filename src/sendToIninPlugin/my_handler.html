@@ -143,6 +143,7 @@
 </head>
 <body>
 	<script>
+		//TODO: These need to be configured per customer
 		var inin_workgroupList = {
 			"Sales":"Sales Workgroup",
 			"Support":"Support Workgroup",
@@ -174,8 +175,6 @@
 			// Get request data from querystring
 			var request = JSON.parse(cookieData);
 			inin_rawData = JSON.stringify(request);
-
-			//var request = JSON.parse('{"version":"1","post":{"href":"http://www.facebook.com/permalink.php?story_fbid=1383992815250113&id=100009182231710","id":"100009182231710_1383992815250113","datetime":"2015-02-26T12:05:17","source":"","network":"mixi","content":{"body":"Follow me at https://twitter.com/NotTimOfficial","bodyhtml":"Follow me at <a href=\\"https://twitter.com/NotTimOfficial\\" target=\\"_blank\\" rel=\\"nofollow\\">https://twitter.com/NotTimOfficial</a>"},"user":{"userid":"100009182231710","username":"Tim Nottheenchanter"},"conversation":[],"attachments":[{}]}}');
 
 			// Set network styles
 			switch(request.post.network) {
