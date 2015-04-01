@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="scripts/jquery-2.1.3.min.js"></script>
+	<script src="scripts/jquery.cookie-1.4.1.min.js"></script>
+	<script src="scripts/common.js"></script>
+	<script type="text/javascript">
+		// Actions on load
+		$(document).ready(function() {
+			// Set redirect URL
+			inin_loginRedirect = 'my_handler.html' + 
+				'?id=' + encodeURIComponent(getParameterByName('id')) + 
+				'&pid=' + encodeURIComponent(getParameterByName('pid'));
+
+		    // Load stored credentials
+		    loadCredsCookie();
+
+		    // Load cached session data
+		    loadSessionCookie(noSession, false);
+		});
+
+		function noSession() {
+			console.debug('no session - do login');
+			// Hide loading page
+			$('#inin-loading').css('display', 'none');
+
+			// Show form
+			$('#inin-formbody').css('display', 'block');
+		}
+	</script>
+	<title>Log in to ININ</title>
+	<style type="text/css">
+		body {
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 11pt;
+		}
+
+		td {
+			padding: 5px 10px;
+		}
+
+		input {
+			box-sizing: border-box;
+		}
+
+		#inin-mainbody {
+			width: 500px;
+			margin: 0px auto;
+		}
+
+		#inin-logo {
+    		display: block;
+			margin: 0px auto;
+		}
+
+		#inin-error {
+			width: 340px;
+			border: 1px solid #FF0000;
+			background-color: #FFCCCC;
+			background-image: url('img/error.png');
+			background-repeat: no-repeat;
+			background-position: 10px 50%;
+			color: #CC0000;
+			margin: 10px auto;
+			padding: 15px 10px 15px 54px;
+			display: none;
+		}
+
+		#inin-formbody {
+			width: 400px;
+			border: 1px solid #000000;
+			margin: 0px auto;
+			padding: 10px;
+			display: none;
+		}
+
+		#inin-formbodytable {
+			border: 0px;
+			width: 100%;
+		}
+
+		.inin-input {
+			width: 100%;
+			margin: 0;
+		}
+
+		#inin-loginbutton {
+			width: 100%;
+			margin: 0;
+			border: 1px solid #000000;
+			background-color: #CCCCCC;
+		}
+
+		#inin-loadingText {
+			text-align: center;
+			font-size: 20pt;
+		}
+	</style>
+</head>
+<body>
+<div id="inin-mainbody">
+	<img id="inin-logo" src="img/inin_logo_400_h.png" />
+	<br />
+	<div id="inin-error">No Errors</div>
+	<div id="inin-loading">
+		<br />
+		<div id="inin-loadingText">Checking session...</div>
+	</div>
+	<div id="inin-formbody">
+		<table id="inin-formbodytable">
+			<tr>
+				<td style="cursor: help" title="The CIC server to connect to. This should be in the form of http://servername or https://servername">Server:</td>
+				<td><input type="text" id="inin-server" class="inin-input" /></td>
+				<td style="cursor: help" title="The port to use for connecting via ICWS. The default is 8018 for HTTP and 8019 for HTTPS. The defaults will be used if left blank.">Port:</td>
+				<td><input size="4" id="inin-port" class="inin-input" /></td>
+			</tr>
+			<tr>
+				<td style="cursor: help" title="The CIC username to connect with">Username:</td>
+				<td colspan="3"><input type="text" id="inin-username" class="inin-input" /></td>
+			</tr>
+			<tr>
+				<td style="cursor: help" title="The password for the CIC user">Password:</td>
+				<td colspan="3"><input type="password" id="inin-password" class="inin-input" /></td>
+			</tr>
+			<tr>
+				<td colspan="4">
+					<button id="inin-loginbutton" onclick="login()">Log In</button>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+</body>
+</html>

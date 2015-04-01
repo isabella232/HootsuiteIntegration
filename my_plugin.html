@@ -1,0 +1,132 @@
+<html>
+  <head>
+	<style type="text/css">
+		body {
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 11pt;
+		}
+
+		#inin-maindiv {
+			width: 500px;
+  			border: #ddd 1px solid;
+			border-radius: 5px;
+			box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+		}
+
+		#inin-header {
+			background-color: #0084B4;
+			color: #FFFFFF;
+			border-radius: 5px 5px 0 0;
+			font-size: 11pt;
+			padding: 3px;
+		}
+
+		#inin-twittericon {
+			width: 16px;
+			height: 16px;
+			background-color: #FFFFFF;
+			float: left;
+			margin: 0 4px 0 2px;
+			border-radius: 3px;
+		}
+
+		#inin-postdetails {
+			padding: 6px;
+		}
+
+		#inin-postimage {
+			margin: 0px auto;
+			width: 500px;
+		}
+
+		#inin-profileimage {
+			width: 32px;
+			height: 32px;
+			float: left;
+			margin: 0 4px 0 0;
+		}
+
+		#inin-displayname {
+			font-weight: bold;
+		}
+
+		#inin-handle {
+			color: #707070;
+		}
+
+		#inin-postbody {
+			margin: 8px 0;
+		}
+
+		#inin-clear {
+			clear: both;
+		}
+
+		#inin-footer {
+			border-style: solid;
+			border-width: 1px 0 0 0;
+			border-color: #E8E8E8;
+			padding: 6px 0 0 0;
+		}
+
+		#inin-footerleft {
+			float: left;
+			color: #707070;
+		}
+
+		#inin-footerright {
+			float: right;
+			color: #707070;
+		}
+	</style>
+  </head>
+  <body>
+    	<script src="https://d2l6uygi1pgnys.cloudfront.net/jsapi/2-0/hsp.js"></script>
+		<script src="scripts/jquery-2.1.3.min.js"></script>
+		<script src="scripts/jquery.cookie-1.4.1.min.js"></script>
+		<script src="scripts/common.js"></script>
+    	<script>
+			$(document).ready(function() {
+				var hsp_params = {
+					apiKey: "65ipi5hnjbgo8sso4gckwsw8c3ickmg3f13"
+				};
+
+				hsp.init(hsp_params);
+
+				hsp.bind('sendtoapp', function(message){
+					sendToAppHandler(message);
+				});
+
+				setInterval(checkSession, 120000);
+				checkSession();
+			});
+
+			function checkSession() {
+				// Load cached session data. This will initiate a message poll if a session exists
+		    	loadSessionCookie(null, true);
+			}
+
+			function sendToAppHandler(message) {
+				console.debug('sendToAppHandler::' + message.post.id);
+
+		        // Set to expire in 10 minutes
+		        var expiryDate = new Date();
+		        expiryDate.setMinutes(expiryDate.getMinutes() + 10);
+
+		        // Clear out conversation and attachment data. They aren't used by the integration and are causing the cookies to be larger than allowed, which causes the cookie not to be created.
+		        message.post.conversation = null;
+		        message.post.attachments = null;
+
+		        // Set data cookie
+		        var messageString = JSON.stringify(message);
+				$.cookie(message.post.id, messageString, { expires: expiryDate });
+
+				// Show page
+				var contentUrl = 'https://hootsuite.mydevspace.com/login.html' + 
+					'?id=' + encodeURIComponent(message.post.id) + 
+					'&pid=' + encodeURIComponent(getParameterByName('pid')); 
+				hsp.showCustomPopup(contentUrl, 'Create Interaction');
+			}
+		</script>
+  </body>
+</html>
