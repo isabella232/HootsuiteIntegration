@@ -122,7 +122,7 @@
 				$.cookie(message.post.id, messageString, { expires: expiryDate });
 
 				// Show page
-				var contentUrl = 'https://hootsuite.mydevspace.com/login.html' + 
+				var contentUrl = 'http://interactiveintelligence.github.io/HootsuiteIntegration/login.html' + 
 					'?id=' + encodeURIComponent(message.post.id) + 
 					'&pid=' + encodeURIComponent(getParameterByName('pid')); 
 				hsp.showCustomPopup(contentUrl, 'Create Interaction');
